@@ -4,6 +4,9 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>lddxdmy</Authors>
+    <Description>粘土对象</Description>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
