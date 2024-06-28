@@ -87,7 +87,7 @@ namespace ClayObject.Extensions
             return false;
 
             // 判断逻辑
-            bool IsTheRawGenericType(Type type) => generic == (type.IsGenericType ? type.GetGenericTypeDefinition() : type);
+            bool IsTheRawGenericType(Type type1) => generic == (type1.IsGenericType ? type1.GetGenericTypeDefinition() : type1);
         }
         /// <summary>
         /// 将一个对象转换为指定类型

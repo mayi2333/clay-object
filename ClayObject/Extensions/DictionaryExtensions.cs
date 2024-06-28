@@ -28,9 +28,9 @@ namespace ClayObject.Extensions
             if (input is JObject jobj)
             {
                 var dic = new Dictionary<string, object>();
-                foreach (var (key, value) in jobj)
+                foreach (var item in jobj)
                 {
-                    dic.Add(key, value);
+                    dic.Add(item.Key, item.Value);
                 }
 
                 return dic;

@@ -131,8 +131,10 @@ namespace ClayObject
         /// <returns><see cref="Clay"/></returns>
         public static dynamic Parse(string json, Encoding encoding, bool throwOnUndefined = true)
         {
-            using var reader = JsonReaderWriterFactory.CreateJsonReader(encoding.GetBytes(json), XmlDictionaryReaderQuotas.Max);
-            return ToValue(XElement.Load(reader), throwOnUndefined);
+            using (var reader = JsonReaderWriterFactory.CreateJsonReader(encoding.GetBytes(json), XmlDictionaryReaderQuotas.Max))
+            { 
+                return ToValue(XElement.Load(reader), throwOnUndefined);
+            }
         }
 
         /// <summary>
@@ -143,8 +145,10 @@ namespace ClayObject
         /// <returns><see cref="Clay"/></returns>
         public static dynamic Parse(Stream stream, bool throwOnUndefined = true)
         {
-            using var reader = JsonReaderWriterFactory.CreateJsonReader(stream, XmlDictionaryReaderQuotas.Max);
-            return ToValue(XElement.Load(reader), throwOnUndefined);
+            using (var reader = JsonReaderWriterFactory.CreateJsonReader(stream, XmlDictionaryReaderQuotas.Max))
+            {
+                return ToValue(XElement.Load(reader), throwOnUndefined);
+            }
         }
 
         /// <summary>
@@ -156,8 +160,10 @@ namespace ClayObject
         /// <returns><see cref="Clay"/></returns>
         public static dynamic Parse(Stream stream, Encoding encoding, bool throwOnUndefined = true)
         {
-            using var reader = JsonReaderWriterFactory.CreateJsonReader(stream, encoding, XmlDictionaryReaderQuotas.Max, _ => { });
-            return ToValue(XElement.Load(reader), throwOnUndefined);
+            using (var reader = JsonReaderWriterFactory.CreateJsonReader(stream, encoding, XmlDictionaryReaderQuotas.Max, _ => { }))
+            { 
+                return ToValue(XElement.Load(reader), throwOnUndefined);
+            }
         }
 
         /// <summary>
@@ -473,16 +479,21 @@ namespace ClayObject
         private static dynamic ToValue(XElement element, bool throwOnUndefined = true)
         {
             var type = (JsonType)Enum.Parse(typeof(JsonType), element.Attribute("type").Value);
-            return type switch
+            switch (type)
             {
-                JsonType.boolean => (bool)element,
-                JsonType.number when element.Value.Contains('.') => (double)element,
-                JsonType.number => (long)element,
-                JsonType.@string => (string)element,
-                JsonType.array => new Clay(element, type, throwOnUndefined),
-                JsonType.@object => new Clay(element, type, throwOnUndefined),
-                _ => null,
-            };
+                case JsonType.boolean:
+                    return (bool)element;
+                case JsonType.number when element.Value.Contains('.'):
+                    return (double)element;
+                case JsonType.number: 
+                    return (long)element;
+                case JsonType.@string:
+                    return (string)element;
+                case JsonType.array:
+                case JsonType.@object:
+                    return new Clay(element, type, throwOnUndefined);
+                default: return null;
+            }
         }
 
         /// <summary>
@@ -506,27 +517,31 @@ namespace ClayObject
 
             // 处理循环 Clay 类型
             if (obj is ExpandoObject) return JsonType.@object;
-
-            return Type.GetTypeCode(objType) switch
+            switch (Type.GetTypeCode(objType))
             {
-                TypeCode.Boolean => JsonType.boolean,
-                TypeCode.String => JsonType.@string,
-                TypeCode.Char => JsonType.@string,
-                TypeCode.DateTime => JsonType.@string,
-                TypeCode.Int16 => JsonType.number,
-                TypeCode.Int32 => JsonType.number,
-                TypeCode.Int64 => JsonType.number,
-                TypeCode.UInt16 => JsonType.number,
-                TypeCode.UInt32 => JsonType.number,
-                TypeCode.UInt64 => JsonType.number,
-                TypeCode.Single => JsonType.number,
-                TypeCode.Double => JsonType.number,
-                TypeCode.Decimal => JsonType.number,
-                TypeCode.SByte => JsonType.number,
-                TypeCode.Byte => JsonType.number,
-                TypeCode.Object => (obj is IEnumerable) ? JsonType.array : JsonType.@object,
-                _ => JsonType.@null,
-            };
+                case TypeCode.Boolean:
+                    return JsonType.boolean;
+                case TypeCode.String:
+                case TypeCode.Char:
+                case TypeCode.DateTime:
+                    return JsonType.@string;
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                case TypeCode.Single:
+                case TypeCode.Double:
+                case TypeCode.Decimal:
+                case TypeCode.SByte:
+                case TypeCode.Byte:
+                    return JsonType.number;
+                case TypeCode.Object:
+                    return (obj is IEnumerable) ? JsonType.array : JsonType.@object;
+                default:
+                    return JsonType.@null;
+            }
         }
 
         /// <summary>
@@ -547,17 +562,21 @@ namespace ClayObject
         private static object CreateJsonNode(object obj)
         {
             var isEnum = obj?.GetType().IsEnum == true;
-
             var type = GetJsonType(obj);
-            return type switch
+            switch (type)
             {
-                JsonType.@string => isEnum ? (int)obj : obj,
-                JsonType.number => isEnum ? (int)obj : obj,
-                JsonType.boolean => obj.ToString().ToLower(),
-                JsonType.@object => CreateXObject(obj),
-                JsonType.array => CreateXArray(obj as IEnumerable),
-                _ => null,
-            };
+                case JsonType.@string:
+                case JsonType.number:
+                    return isEnum ? (int)obj : obj;
+                case JsonType.boolean:
+                    return obj.ToString().ToLower();
+                case JsonType.@object:
+                    return CreateXObject(obj);
+                case JsonType.array:
+                    return CreateXObject(obj as IEnumerable);
+                default:
+                    return null;
+            }
         }
 
         /// <summary>
@@ -610,11 +629,15 @@ namespace ClayObject
         /// <returns></returns>
         private static string CreateJsonString(XStreamingElement element)
         {
-            using var ms = new MemoryStream();
-            using var writer = JsonReaderWriterFactory.CreateJsonWriter(ms, Encoding.UTF8);
-            element.WriteTo(writer);
-            writer.Flush();
-            return Encoding.UTF8.GetString(ms.ToArray());
+            using (var ms = new MemoryStream())
+            {
+                using (var writer = JsonReaderWriterFactory.CreateJsonWriter(ms, Encoding.UTF8))
+                {
+                    element.WriteTo(writer);
+                    writer.Flush();
+                    return Encoding.UTF8.GetString(ms.ToArray());
+                }
+            }
         }
 
         /// <summary>
