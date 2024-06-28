@@ -1,5 +1,4 @@
-﻿using ClayObject;
-using ClayObject.Extensions;
+﻿using ClayObject.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -480,7 +479,8 @@ namespace ClayObject
                 JsonType.number when element.Value.Contains('.') => (double)element,
                 JsonType.number => (long)element,
                 JsonType.@string => (string)element,
-                JsonType.@object or JsonType.array => new Clay(element, type, throwOnUndefined),
+                JsonType.array => new Clay(element, type, throwOnUndefined),
+                JsonType.@object => new Clay(element, type, throwOnUndefined),
                 _ => null,
             };
         }
@@ -510,8 +510,20 @@ namespace ClayObject
             return Type.GetTypeCode(objType) switch
             {
                 TypeCode.Boolean => JsonType.boolean,
-                TypeCode.String or TypeCode.Char or TypeCode.DateTime => JsonType.@string,
-                TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or TypeCode.Single or TypeCode.Double or TypeCode.Decimal or TypeCode.SByte or TypeCode.Byte => JsonType.number,
+                TypeCode.String => JsonType.@string,
+                TypeCode.Char => JsonType.@string,
+                TypeCode.DateTime => JsonType.@string,
+                TypeCode.Int16 => JsonType.number,
+                TypeCode.Int32 => JsonType.number,
+                TypeCode.Int64 => JsonType.number,
+                TypeCode.UInt16 => JsonType.number,
+                TypeCode.UInt32 => JsonType.number,
+                TypeCode.UInt64 => JsonType.number,
+                TypeCode.Single => JsonType.number,
+                TypeCode.Double => JsonType.number,
+                TypeCode.Decimal => JsonType.number,
+                TypeCode.SByte => JsonType.number,
+                TypeCode.Byte => JsonType.number,
                 TypeCode.Object => (obj is IEnumerable) ? JsonType.array : JsonType.@object,
                 _ => JsonType.@null,
             };
@@ -539,7 +551,8 @@ namespace ClayObject
             var type = GetJsonType(obj);
             return type switch
             {
-                JsonType.@string or JsonType.number => isEnum ? (int)obj : obj,
+                JsonType.@string => isEnum ? (int)obj : obj,
+                JsonType.number => isEnum ? (int)obj : obj,
                 JsonType.boolean => obj.ToString().ToLower(),
                 JsonType.@object => CreateXObject(obj),
                 JsonType.array => CreateXArray(obj as IEnumerable),
@@ -809,9 +822,14 @@ namespace ClayObject
         /// <returns></returns>
         public IEnumerator GetEnumerator()
         {
-            return IsArray
-                ? new ClayArrayEnumerator(this)
-                : new ClayObjectEnumerator(this);
+            if (IsArray)
+            {
+                return new ClayArrayEnumerator(this);
+            }
+            else
+            {
+                return new ClayObjectEnumerator(this);
+            }
         }
 
         /// <summary>

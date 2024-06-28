@@ -65,7 +65,7 @@ namespace ClayObject
                         ? xElement.Attribute("item").Value
                         : xElement.Name.LocalName;
 
-                    return new(localName, _clay[localName]);
+                    return KeyValuePair.Create(localName, _clay[localName]);
                 }
                 catch (IndexOutOfRangeException)
                 {

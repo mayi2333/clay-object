@@ -100,7 +100,7 @@ namespace ClayObject.Extensions
             if (type == null) return obj;
             if (type == typeof(string)) return obj?.ToString();
             if (type == typeof(Guid) && obj != null) return Guid.Parse(obj.ToString());
-            if (type == typeof(bool) && obj != null && obj is not bool)
+            if (type == typeof(bool) && obj != null && !(obj is bool))
             {
                 var objStr = obj.ToString().ToLower();
                 if (objStr == "1" || objStr == "true" || objStr == "yes" || objStr == "on") return true;
@@ -125,18 +125,6 @@ namespace ClayObject.Extensions
             {
                 return ((DateTimeOffset)obj).ConvertToDateTime();
             }
-#if !NET5_0
-            // 处理 DateTime -> DateOnly 类型
-            else if (obj.GetType().Equals(typeof(DateTime)) && (underlyingType ?? type).Equals(typeof(DateOnly)))
-            {
-                return DateOnly.FromDateTime(((DateTime)obj));
-            }
-            // 处理 DateTime -> TimeOnly 类型
-            else if (obj.GetType().Equals(typeof(DateTime)) && (underlyingType ?? type).Equals(typeof(TimeOnly)))
-            {
-                return TimeOnly.FromDateTime(((DateTime)obj));
-            }
-#endif
             else if (typeof(IConvertible).IsAssignableFrom(underlyingType ?? type))
             {
                 try

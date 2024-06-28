@@ -49,7 +49,7 @@ namespace ClayObject.Extensions
                 return clayExpando;
             }
 
-            if (value is not ExpandoObject expando)
+            if (!(value is ExpandoObject expando))
             {
                 expando = new ExpandoObject();
                 var dict = (IDictionary<string, object>)expando;
