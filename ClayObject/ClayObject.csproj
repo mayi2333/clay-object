@@ -5,7 +5,9 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>lddxdmy</Authors>
     <Description>粘土对象</Description>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
+    <RepositoryUrl>https://github.com/mayi2333/clay-object.git</RepositoryUrl>
+    <PackageTags>粘土对象,Clay,dynamic</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
